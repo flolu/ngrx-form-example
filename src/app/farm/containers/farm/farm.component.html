@@ -1,0 +1,29 @@
+<h3
+    *ngIf="error$ | async"
+    style="color: red"
+>
+    {{ error$ | async }}
+</h3>
+<div
+    *ngIf="loading$ | async"
+    class="loader"
+></div>
+<app-farm-list
+    [farms]="farms$ | async"
+    [selectedFarmId]="selectedFarmId$ | async"
+    (selectFarm)="onSelectFarm($event)"
+></app-farm-list>
+<app-farm-form
+    *ngIf="selectedFarmId$ | async"
+    [formState]="formState$ | async"
+    [edit]="edit$ | async"
+    (updateForm)="onUpdateForm($event)"
+></app-farm-form>
+<app-farm-buttons
+    [states]="buttonStates$ | async"
+    (add)="onAdd()"
+    (edit)="onEdit()"
+    (save)="onSave()"
+    (cancel)="onCancel()"
+    (delete)="onDelete()"
+></app-farm-buttons>

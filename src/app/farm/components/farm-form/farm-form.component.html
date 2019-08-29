@@ -1,0 +1,30 @@
+<form [formGroup]="form">
+    <div>
+        <label>Name</label>
+        <input
+            [appDisableControl]="!edit"
+            formControlName="name"
+            type="text"
+            placeholder="Name"
+        >
+    </div>
+    <div>
+        <label>Number</label>
+        <input
+            [appDisableControl]="!edit"
+            formControlName="number"
+            type="text"
+            placeholder="Number"
+        >
+    </div>
+    <div>
+        <label>Area in ha</label>
+        <input
+            [appDisableControl]="!edit"
+            formControlName="area"
+            type="number"
+            placeholder="Area in ha"
+            step="10"
+        >
+    </div>
+</form>

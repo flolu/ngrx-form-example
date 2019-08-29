@@ -1,0 +1,12 @@
+form > div {
+  margin-bottom: 10px;
+}
+
+label {
+  margin-right: 5px;
+}
+
+input {
+  padding: 8px;
+  border-radius: 5px;
+}
