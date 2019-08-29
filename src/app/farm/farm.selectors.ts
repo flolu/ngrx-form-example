@@ -1,6 +1,7 @@
 import { createSelector } from '@ngrx/store';
 import { selectFarmState } from '../app.state';
 import { FarmState } from './farm.reducer';
+import * as fromFarms from './farm.reducer';
 
 export const selectSelectedFarmId = createSelector(
     selectFarmState,
@@ -22,11 +23,11 @@ export const selectLoading = createSelector(
     selectFarmState,
     (state: FarmState) => state.loading,
 );
-export const selectFarms = createSelector(
-    selectFarmState,
-    (state: FarmState) => state.farms,
-);
 export const selectButtonStates = createSelector(
     selectFarmState,
     (state: FarmState) => state.buttonStates,
+);
+export const selectFarms = createSelector(
+    selectFarmState,
+    fromFarms.selectAllFarms,
 );

@@ -14,15 +14,7 @@ import {
     addFarm,
 } from '../../farm.actions';
 import { FarmState } from '../../farm.reducer';
-import {
-    selectSelectedFarmId,
-    selectForm,
-    selectEdit,
-    selectError,
-    selectLoading,
-    selectFarms,
-    selectButtonStates,
-} from '../../farm.selectors';
+import * as FarmStoreSelectors from '../../farm.selectors';
 
 @Component({
     selector: 'app-farm',
@@ -31,13 +23,13 @@ import {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FarmComponent {
-    formState$: Observable<FarmForm> = this.store.select(selectForm);
-    edit$: Observable<boolean> = this.store.select(selectEdit);
-    error$: Observable<string> = this.store.select(selectError);
-    loading$: Observable<boolean> = this.store.select(selectLoading);
-    farms$: Observable<Farm[]> = this.store.select(selectFarms);
-    selectedFarmId$: Observable<string> = this.store.select(selectSelectedFarmId);
-    buttonStates$: Observable<boolean[]> = this.store.select(selectButtonStates);
+    formState$: Observable<FarmForm> = this.store.select(FarmStoreSelectors.selectForm);
+    edit$: Observable<boolean> = this.store.select(FarmStoreSelectors.selectEdit);
+    error$: Observable<string> = this.store.select(FarmStoreSelectors.selectError);
+    loading$: Observable<boolean> = this.store.select(FarmStoreSelectors.selectLoading);
+    farms$: Observable<Farm[]> = this.store.select(FarmStoreSelectors.selectFarms);
+    selectedFarmId$: Observable<string> = this.store.select(FarmStoreSelectors.selectSelectedFarmId);
+    buttonStates$: Observable<boolean[]> = this.store.select(FarmStoreSelectors.selectButtonStates);
 
     constructor(private store: Store<{ farm: FarmState }>) {
         this.store.dispatch(getFarms());

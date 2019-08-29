@@ -1,34 +1,22 @@
 import { createReducer, on } from '@ngrx/store';
 import { Farm } from '../entities/farm';
 import { FarmForm } from './components/farm-form/farm-form.component';
-import {
-    addFarm,
-    addNewFarmDone,
-    cancelEditFarm,
-    deleteFarm,
-    deleteFarmDone,
-    deleteFarmFail,
-    editFarm,
-    farmFormChanged,
-    getFarms,
-    getFarmsDone,
-    getFarmsFail,
-    saveEditFarm,
-    saveEditFarmDone,
-    saveEditFarmFail,
-    selectFarm,
-} from './farm.actions';
+import * as FarmStoreActions from './farm.actions';
+import { EntityState, EntityAdapter, createEntityAdapter } from '@ngrx/entity';
 
-export interface FarmState {
+export interface FarmState extends EntityState<Farm> {
     loading: boolean;
     loaded: boolean;
     error: string;
-    farms: Farm[];
     buttonStates: boolean[];
     selectedFarmId: string;
     form: FarmForm;
     edit: boolean;
 }
+
+export const adapter: EntityAdapter<Farm> = createEntityAdapter<Farm>({
+    selectId: (f: Farm) => f.id,
+});
 
 export const NEW_ID = 'new-id';
 export const BUTTON_STATES = {
@@ -37,74 +25,69 @@ export const BUTTON_STATES = {
     edit: [false, false, true, true, false],
 };
 
-export const initialState: FarmState = {
+export const initialState: FarmState = adapter.getInitialState({
     loading: false,
     loaded: false,
     error: null,
-    farms: [],
     buttonStates: BUTTON_STATES.unselected,
     selectedFarmId: '',
     form: { name: '', area: null, number: '' },
     edit: false,
-};
+});
 
 export const farmReducer = createReducer(
     initialState,
-    on(getFarms, state => ({
+    on(FarmStoreActions.getFarms, state => ({
         ...state,
         loading: true,
         loaded: false,
         error: null,
     })),
-    on(getFarmsDone, (state, action) => ({
-        ...state,
-        loading: false,
-        loaded: true,
-        error: null,
-        farms: action.farms,
-    })),
-    on(getFarmsFail, (state, action) => ({
+    on(FarmStoreActions.getFarmsDone, (state, { farms }) =>
+        adapter.addAll(farms, { ...state, loading: false, loaded: true, error: null }),
+    ),
+    on(FarmStoreActions.getFarmsFail, (state, action) => ({
         ...state,
         loading: false,
         loaded: false,
         error: action.error,
-        farms: [],
     })),
-    on(selectFarm, (state, action) => ({
+    on(FarmStoreActions.selectFarm, (state, { id }) => ({
         ...state,
-        selectedFarmId: action.id,
-        form: toFarmFormValue(getSelectedFarmById(state.farms, action.id)),
-        buttonStates: action.id ? BUTTON_STATES.selected : BUTTON_STATES.unselected,
+        selectedFarmId: id,
+        form: toFarmFormValue(state.entities[id]),
+        buttonStates: id ? BUTTON_STATES.selected : BUTTON_STATES.unselected,
         edit: false,
     })),
-    on(deleteFarm, state => ({
+    on(FarmStoreActions.deleteFarm, state => ({
         ...state,
         loading: true,
         loaded: false,
         error: null,
     })),
-    on(deleteFarmDone, (state, action) => ({
-        ...state,
-        loading: false,
-        loaded: true,
-        error: null,
-        farms: state.farms.filter(f => f.id !== action.deleted.id),
-        selectedFarmId: '',
-        buttonStates: BUTTON_STATES.unselected,
-    })),
-    on(deleteFarmFail, (state, action) => ({
+    on(FarmStoreActions.deleteFarmDone, (state, { deleted }) =>
+        adapter.removeOne(deleted.id, {
+            ...state,
+            loading: false,
+            loaded: true,
+            error: null,
+            selectedFarmId: '',
+            buttonStates: BUTTON_STATES.unselected,
+        }),
+    ),
+    on(FarmStoreActions.deleteFarmFail, (state, action) => ({
         ...state,
         loading: false,
         loaded: false,
         error: action.error,
     })),
-    on(editFarm, (state, action) => ({
+    on(FarmStoreActions.editFarm, (state, action) => ({
         ...state,
         edit: action.edit,
         buttonStates: action.edit ? BUTTON_STATES.edit : BUTTON_STATES.selected,
     })),
-    on(farmFormChanged, (state, action) => ({ ...state, form: action.value })),
-    on(cancelEditFarm, state => {
+    on(FarmStoreActions.farmFormChanged, (state, action) => ({ ...state, form: action.value })),
+    on(FarmStoreActions.cancelEditFarm, state => {
         if (state.selectedFarmId === NEW_ID) {
             return {
                 ...state,
@@ -117,43 +100,45 @@ export const farmReducer = createReducer(
             return {
                 ...state,
                 buttonStates: BUTTON_STATES.selected,
-                form: toFarmFormValue(getSelectedFarmById(state.farms, state.selectedFarmId)),
+                form: toFarmFormValue(state.entities[state.selectedFarmId]),
                 edit: false,
             };
         }
     }),
-    on(saveEditFarm, (state, action) => ({
+    on(FarmStoreActions.saveEditFarm, state => ({
         ...state,
         loading: true,
         loaded: false,
         error: null,
     })),
-    on(saveEditFarmDone, (state, action) => ({
-        ...state,
-        loading: false,
-        loaded: true,
-        error: null,
-        farms: state.farms.map(f => (f.id === action.saved.id ? action.saved : f)),
-        buttonStates: BUTTON_STATES.selected,
-        edit: false,
-    })),
-    on(addNewFarmDone, (state, action) => ({
-        ...state,
-        loading: false,
-        loaded: true,
-        error: null,
-        farms: [...state.farms, action.created],
-        buttonStates: BUTTON_STATES.selected,
-        edit: false,
-        selectedFarmId: action.created.id,
-    })),
-    on(saveEditFarmFail, (state, action) => ({
+    on(FarmStoreActions.saveEditFarmDone, (state, { saved }) =>
+        adapter.upsertOne(saved, {
+            ...state,
+            loading: false,
+            loaded: true,
+            error: null,
+            buttonStates: BUTTON_STATES.selected,
+            edit: false,
+        }),
+    ),
+    on(FarmStoreActions.addNewFarmDone, (state, action) =>
+        adapter.addOne(action.created, {
+            ...state,
+            loading: false,
+            loaded: true,
+            error: null,
+            buttonStates: BUTTON_STATES.selected,
+            edit: false,
+            selectedFarmId: action.created.id,
+        }),
+    ),
+    on(FarmStoreActions.saveEditFarmFail, (state, action) => ({
         ...state,
         loading: false,
         loaded: false,
         error: action.error,
     })),
-    on(addFarm, state => ({
+    on(FarmStoreActions.addFarm, state => ({
         ...state,
         buttonStates: BUTTON_STATES.edit,
         selectedFarmId: NEW_ID,
@@ -161,10 +146,8 @@ export const farmReducer = createReducer(
         edit: true,
     })),
 );
-
-function getSelectedFarmById(farms: Farm[], id: string): Farm {
-    return farms.filter(f => f.id === id)[0];
-}
+const { selectAll } = adapter.getSelectors();
+export const selectAllFarms = selectAll;
 
 function toFarmFormValue(farm: Farm): FarmForm {
     return {
