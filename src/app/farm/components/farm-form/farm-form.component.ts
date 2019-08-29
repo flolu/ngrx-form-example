@@ -1,5 +1,4 @@
 import {
-    ChangeDetectionStrategy,
     Component,
     EventEmitter,
     Input,
@@ -7,9 +6,12 @@ import {
     OnDestroy,
     Output,
     SimpleChanges,
+    ViewChild,
+    AfterViewInit,
 } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { debounceTime, takeWhile, tap } from 'rxjs/operators';
+import { DxFormComponent } from 'devextreme-angular';
 
 export interface FarmForm {
     name: string;
@@ -22,31 +24,27 @@ export interface FarmForm {
     templateUrl: './farm-form.component.html',
     styleUrls: ['./farm-form.component.css'],
 })
-export class FarmFormComponent implements OnChanges, OnDestroy {
+export class FarmFormComponent implements OnChanges, OnDestroy, AfterViewInit {
     @Input() edit = false;
     @Input() formState: FarmForm;
     @Output() updateForm = new EventEmitter<FarmForm>();
 
-    form: FormGroup = new FormGroup({
-        name: new FormControl(),
-        number: new FormControl(),
-        area: new FormControl(),
-    });
+    @ViewChild('form', { static: true }) form: DxFormComponent;
+
     alive = true;
 
-    constructor() {
-        this.form.valueChanges
+    ngAfterViewInit() {
+        this.form.onFieldDataChanged
             .pipe(
                 takeWhile(() => this.alive),
-                debounceTime(100),
-                tap(value => this.updateForm.emit(value)),
+                tap(() => this.updateForm.emit(this.form.formData)),
             )
             .subscribe();
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes.formState && this.formState !== this.form.value) {
-            this.form.patchValue(this.formState);
+        if (changes.formState && this.formState !== this.form.formData) {
+            this.form.formData = this.formState;
         }
     }
 

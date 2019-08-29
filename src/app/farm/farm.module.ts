@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
+import { DxFormModule } from 'devextreme-angular';
 import { components } from './components';
 import { containers } from './containers';
 import { FarmComponent } from './containers/farm/farm.component';
@@ -18,6 +19,7 @@ import { farmReducer } from './farm.reducer';
         FormsModule,
         StoreModule.forRoot({ farm: farmReducer }),
         EffectsModule.forRoot([FarmEffects]),
+        DxFormModule,
     ],
     exports: [FarmComponent],
 })

@@ -23,7 +23,11 @@
     "@ngrx/entity": "^8.2.0",
     "@ngrx/store": "^8.0.1",
     "@ngrx/store-devtools": "^8.0.1",
+    "devextreme": "^19.1.5",
+    "devextreme-angular": "^19.1.5",
+    "devextreme-intl": "^19.1.5",
     "rxjs": "~6.4.0",
+    "stream": "0.0.2",
     "tslib": "^1.9.0",
     "zone.js": "~0.9.1"
   },
